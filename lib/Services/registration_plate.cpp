@@ -1,0 +1,4 @@
+
+class registration_plate{
+
+};

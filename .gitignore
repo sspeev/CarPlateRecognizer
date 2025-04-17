@@ -30,3 +30,32 @@
 *.exe
 *.out
 *.app
+
+# Build directories
+/build/
+/out/
+/Debug/
+/Release/
+/x64/
+/x86/
+/.vs/
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+/install_manifest.txt
+
+# IDE specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.vcxproj.filters
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Generated documentation
+/doc/html/
+/doc/latex/
