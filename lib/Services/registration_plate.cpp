@@ -1,52 +1,67 @@
 #include <iostream>
 #include <stdexcept>
-#include <algorithm>
-#include <cctype>
-#include "Contracts/registration_plate.hpp"
+#include <cstring>
+#include <fstream>
+#include "../Contracts/registration_plate.hpp"
 
-class registration_plate
+registration_plate::registration_plate(const char *plate) // constructor
+    : prefix(nullptr), number(0), suffix(nullptr)
 {
-private:
-    std::string prefix = "";
-    int number = 0;
-    std::string suffix = "";
+    if (!plate || !plate[0])
+        return;
 
-public:
-    // Prefix getters and setters
-    void SetPrefix(const std::string &input);
-    std::string GetPrefix() const;
+    char pref[3] = {0};
+    int num = 0;
+    char suf[3] = {0};
 
-    // Number getters and setters
-    void SetNumber(int input);
-    int GetNumber() const;
+    if (sscanf(plate, "%2s%d%2s", pref, &num, suf) != 3)
+        throw std::invalid_argument("Invalid format. Expected: XXNNNNXX");
 
-    // Suffix getters and setters
-    void SetSuffix(const std::string &input);
-    std::string GetSuffix() const;
-};
-
-// Implement the methods declared in the header
-void registration_plate::SetPrefix(const std::string &input)
-{
-    if (input.length() > 2)
+    try
     {
-        throw std::invalid_argument("Prefix must be between 0 and 2 long");
+        SetPrefix(pref);
+        SetNumber(num);
+        SetSuffix(suf);
     }
-    prefix = input;
+    catch (const std::invalid_argument &e)
+    {
+        delete[] prefix;
+        delete[] suffix;
+        prefix = suffix = nullptr;
+        throw;
+    }
 }
 
-std::string registration_plate::GetPrefix() const
+registration_plate::~registration_plate() // destructor
+{
+    delete[] prefix;
+    delete[] suffix;
+}
+
+void registration_plate::SetPrefix(const char *input)
+{
+    if (input && strlen(input) > 2)
+        throw std::invalid_argument("Prefix must be 0-2 characters");
+
+    delete[] prefix;
+    prefix = nullptr;
+
+    if (input)
+    {
+        prefix = new char[strlen(input) + 1];
+        strcpy(prefix, input);
+    }
+}
+
+const char *registration_plate::GetPrefix() const
 {
     return prefix;
 }
 
 void registration_plate::SetNumber(int input)
 {
-    // Remove the isdigit check - input is already an int
-    if (input < 1000 || input > 9999) // Note the correction from && to ||
-    {
-        throw std::invalid_argument("Must be a number between 1000 and 9999");
-    }
+    if (input < 1000 || input > 9999)
+        throw std::invalid_argument("Number must be 1000-9999");
     number = input;
 }
 
@@ -55,16 +70,101 @@ int registration_plate::GetNumber() const
     return number;
 }
 
-void registration_plate::SetSuffix(const std::string &input)
+void registration_plate::SetSuffix(const char *input)
 {
-    if (input.length() > 2)
+    if (input && strlen(input) > 2)
+        throw std::invalid_argument("Suffix must be 0-2 characters");
+
+    delete[] suffix;
+    suffix = nullptr;
+
+    if (input)
     {
-        throw std::invalid_argument("Suffix must be between 0 and 2 long");
+        suffix = new char[strlen(input) + 1];
+        strcpy(suffix, input);
     }
-    suffix = input;
 }
 
-std::string registration_plate::GetSuffix() const
+const char *registration_plate::GetSuffix() const
 {
     return suffix;
 }
+
+const registration_plate operator<(const registration_plate &plate1, const registration_plate &plate2)
+{
+    // Compare prefixes first
+    if (plate1.GetPrefix() && plate2.GetPrefix())
+    {
+        int prefixCmp = strcmp(plate1.GetPrefix(), plate2.GetPrefix());
+        if (prefixCmp != 0)
+            return prefixCmp < 0 ? plate1 : plate2;
+    }
+    else if (plate1.GetPrefix())
+    {
+        return plate2;
+    }
+    else if (plate2.GetPrefix())
+    {
+        return plate1;
+    }
+
+    // Compare numbers if prefixes are equal
+    if (plate1.GetNumber() != plate2.GetNumber())
+    {
+        return plate1.GetNumber() < plate2.GetNumber() ? plate1 : plate2;
+    }
+
+    // Compare suffixes if everything else is equal
+    if (plate1.GetSuffix() && plate2.GetSuffix())
+    {
+        int suffixCmp = strcmp(plate1.GetSuffix(), plate2.GetSuffix());
+        return suffixCmp < 0 ? plate1 : plate2;
+    }
+    else if (plate1.GetSuffix())
+    {
+        return plate2;
+    }
+    else if (plate2.GetSuffix())
+    {
+        return plate1;
+    }
+
+    return plate1; // They're equal
+}
+
+std::ostream &operator<<(std::ostream &os, const registration_plate &plate)
+{
+    if (plate.prefix)
+        os << plate.prefix;
+    os << plate.number;
+    if (plate.suffix)
+        os << plate.suffix;
+    return os;
+}
+
+// std::istream& operator>>(std::istream& is, registration_plate& plate) {
+//     char buffer[10] = {0};
+//     if (is >> buffer) {
+//         char pref[3] = {0};
+//         int num = 0;
+//         char suf[3] = {0};
+
+//         if (sscanf(buffer, "%2s %d %2s", pref, &num, suf) == 3) {
+//             // Direct access to private members
+//             delete[] plate.prefix;
+//             delete[] plate.suffix;
+
+//             plate.prefix = new char[strlen(pref) + 1];
+//             strcpy(plate.prefix, pref);
+
+//             plate.number = num;
+
+//             plate.suffix = new char[strlen(suf) + 1];
+//             strcpy(plate.suffix, suf);
+//         }
+//         else {
+//             is.setstate(std::ios::failbit);
+//         }
+//     }
+//     return is;
+// }

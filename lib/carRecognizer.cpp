@@ -2,12 +2,12 @@
 #include "Services/registration_plate.cpp"
 int test()
 {
-    std::string prefix;
-    std::cin >> prefix;
+    char* input = new char[7];
+    std::cin >> input;
     try
     {
-        registration_plate plate;
-        plate.SetPrefix(prefix);
+        registration_plate plate(input);
+        std::cout << "Plate:" << plate.GetPrefix() << " " << plate.GetNumber() << " " << plate.GetSuffix() << std::endl;
     }
     catch (const std::exception &e)
     {
