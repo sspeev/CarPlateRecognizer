@@ -10,15 +10,15 @@ registration_plate::registration_plate(const char *plate) // constructor
     if (!plate || !plate[0])
         return;
 
-    char pref[3] = {0};
+    char *pref = new char[3];
     int num = 0;
-    char suf[3] = {0};
-
-    if (sscanf(plate, "%2s%d%2s", pref, &num, suf) != 3)
-        throw std::invalid_argument("Invalid format. Expected: XXNNNNXX");
+    char *suf = new char[3];
 
     try
     {
+        if (sscanf(plate, "%2s%d%2s", pref, &num, suf) != 3)
+            throw std::invalid_argument("Invalid format. Expected: XXNNNNXX");
+
         SetPrefix(pref);
         SetNumber(num);
         SetSuffix(suf);
@@ -165,24 +165,28 @@ bool operator==(const registration_plate &plate1, const registration_plate &plat
     return true;
 }
 
-const char* registration_plate::to_string() const {
-    // Calculate required buffer size
-    size_t size = 10; // Max would be 2 (prefix) + 4 (number) + 2 (suffix) + 1 (null terminator)
-    static char* buffer = new char[size];
+const char* registration_plate::to_string() const
+{
+    // Use a static buffer for the result
+    static char buffer[9]; // Large enough for prefix + number + suffix + null terminator
     
-    // Clear buffer
-    memset(buffer, 0, size);
+    int pos = 0;
     
-    // Build string
-    if (prefix)
-        strcat(buffer, prefix);
+    // Add prefix if it exists
+    if (prefix) {
+        strcpy(buffer, prefix);
+        pos += strlen(prefix);
+    } else {
+        buffer[0] = '\0'; // Ensure buffer is initialized if no prefix
+    }
     
-    char numStr[5];
-    sprintf(numStr, "%d", number);
-    strcat(buffer, numStr);
+    // Add number (converting int to chars)
+    pos += sprintf(buffer + pos, "%d", number);
     
-    if (suffix)
-        strcat(buffer, suffix);
+    // Add suffix if it exists
+    if (suffix) {
+        strcpy(buffer + pos, suffix);
+    }
     
     return buffer;
 }
