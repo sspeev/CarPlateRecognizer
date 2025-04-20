@@ -142,29 +142,47 @@ std::ostream &operator<<(std::ostream &os, const registration_plate &plate)
     return os;
 }
 
-// std::istream& operator>>(std::istream& is, registration_plate& plate) {
-//     char buffer[10] = {0};
-//     if (is >> buffer) {
-//         char pref[3] = {0};
-//         int num = 0;
-//         char suf[3] = {0};
+bool operator==(const registration_plate &plate1, const registration_plate &plate2)
+{
+    // Compare numbers
+    if (plate1.GetNumber() != plate2.GetNumber())
+        return false;
 
-//         if (sscanf(buffer, "%2s %d %2s", pref, &num, suf) == 3) {
-//             // Direct access to private members
-//             delete[] plate.prefix;
-//             delete[] plate.suffix;
+    // Compare prefixes
+    if ((plate1.GetPrefix() == nullptr) != (plate2.GetPrefix() == nullptr))
+        return false;
 
-//             plate.prefix = new char[strlen(pref) + 1];
-//             strcpy(plate.prefix, pref);
+    if (plate1.GetPrefix() && strcmp(plate1.GetPrefix(), plate2.GetPrefix()) != 0)
+        return false;
 
-//             plate.number = num;
+    // Compare suffixes
+    if ((plate1.GetSuffix() == nullptr) != (plate2.GetSuffix() == nullptr))
+        return false;
 
-//             plate.suffix = new char[strlen(suf) + 1];
-//             strcpy(plate.suffix, suf);
-//         }
-//         else {
-//             is.setstate(std::ios::failbit);
-//         }
-//     }
-//     return is;
-// }
+    if (plate1.GetSuffix() && strcmp(plate1.GetSuffix(), plate2.GetSuffix()) != 0)
+        return false;
+
+    return true;
+}
+
+const char* registration_plate::to_string() const {
+    // Calculate required buffer size
+    size_t size = 10; // Max would be 2 (prefix) + 4 (number) + 2 (suffix) + 1 (null terminator)
+    static char* buffer = new char[size];
+    
+    // Clear buffer
+    memset(buffer, 0, size);
+    
+    // Build string
+    if (prefix)
+        strcat(buffer, prefix);
+    
+    char numStr[5];
+    sprintf(numStr, "%d", number);
+    strcat(buffer, numStr);
+    
+    if (suffix)
+        strcat(buffer, suffix);
+    
+    return buffer;
+}

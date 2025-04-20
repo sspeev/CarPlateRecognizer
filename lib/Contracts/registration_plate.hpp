@@ -26,4 +26,7 @@ public:
     //Friend declarations
     friend std::ostream& operator<<(std::ostream& os, const registration_plate& plate);
     friend std::istream& operator>>(std::istream& is, registration_plate& plate);
+    friend bool operator==(const registration_plate& plate1, const registration_plate& plate2);
+    friend const registration_plate operator<(const registration_plate& plate1, const registration_plate& plate2);
+    const char* to_string() const;
 };
