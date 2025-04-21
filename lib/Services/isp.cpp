@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 isp::isp(const char *input_isp) // constructor
-    : year(0), month(0), day(0)
+    : year(0), month(0), day(0), 
 {
     if (input_isp && input_isp[0])
     {
