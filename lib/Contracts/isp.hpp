@@ -10,7 +10,7 @@ private:
     std::string region = "";
 
 public:
-    isp(const char *);   // ctor
+    isp(const char *); // ctor
     // ~isp();              // dtor
     // isp(const isp &egn); // cpyctor
     // isp &operator=(const isp &egn);
@@ -18,21 +18,22 @@ public:
     int GetYear() const;
     int GetMonth() const;
     int GetDay() const;
+    std::string GetRegion() const;
 
     void SetYear(int year);
     void SetMonth(int month);
     void SetDay(int day);
-
-    std::string GetRegion() const;
     void SetRegion(std::string region);
 
-    static bool is_valid_ucn(const char *egn);
-    const char* to_string();
-    
+    // static bool is_valid_ucn(const char *egn);
+    const char *to_string();
+
     friend std::ostream &operator<<(std::ostream &os, const isp &egn);
     friend std::istream &operator>>(std::istream &is, isp &egn);
+    bool operator<(const isp &other) const;
+    bool operator==(const isp &other) const;
 
 private:
-    const std::string RegionCalculator(char* num);
-    const int NumberFixer(char* num);
+    const std::string RegionCalculator(char *num);
+    const int NumberFixer(char *num);
 };

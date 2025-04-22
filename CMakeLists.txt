@@ -4,16 +4,16 @@ project("Homework" VERSION 1.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Include directories
+# Include directories - add specific directories
 include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/lib)
 
-# Library sources
-set(LIB_SOURCES
-    lib/Services/carRecognizer.cpp
+# Create library with all required source files
+add_library(carRecognizer
+    lib/Services/isp.cpp
+    lib/Services/registration_plate.cpp
+    lib/Services/vehicle_register.cpp
 )
-
-# Create libraries
-add_library(carRecognizer lib/carRecognizer.cpp)
 
 # Main executable
 add_executable(Homework main.cpp)

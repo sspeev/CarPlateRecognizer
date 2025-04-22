@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include <cstring>
 #include <fstream>
-#include "../Contracts/registration_plate.hpp"
+#include "Contracts/registration_plate.hpp"
 
 registration_plate::registration_plate(const char *plate) // constructor
     : prefix(nullptr), number(0), suffix(nullptr)

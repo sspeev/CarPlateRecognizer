@@ -1,24 +1,7 @@
-#include "../Contracts/vehicle_register.hpp"
+#include "Contracts/vehicle_register.hpp"
 #include <sstream>
 
-class vehicle_register
-{
-public:
-    vehicle_register();
-
-    void Register(registration_plate registration, isp owner);
-    void deregister(registration_plate registration);
-    std::vector<registration_plate> owned_vehicles(isp person) const;
-
-    friend std::ostream &operator<<(std::ostream &os, const vehicle_register &reg);
-    friend std::istream &operator>>(std::istream &is, vehicle_register &reg);
-
-private:
-    std::map<registration_plate, isp> vehicles;
-    std::map<isp, std::vector<registration_plate>> owner_vehicles;
-};
-
-vehicle_register::vehicle_register()
+vehicle_register::vehicle_register()//constructor
     : vehicles(), owner_vehicles()
 {
     // Empty constructor creates empty maps
@@ -40,7 +23,16 @@ void vehicle_register::Register(registration_plate registration, isp owner)
         }
     }
 
-    // Register the vehicle to this owner
+    else
+    {
+        // If the vehicle is not registered, check if the owner already has it
+        auto &owner_list = owner_vehicles[owner];
+        if (std::find(owner_list.begin(), owner_list.end(), registration) != owner_list.end())
+        {
+            throw std::invalid_argument("Vehicle is already registered to this owner");
+        }
+    }
+
     vehicles[registration] = owner;
 
     // Add to the owner's list of vehicles
@@ -75,9 +67,9 @@ void vehicle_register::deregister(registration_plate registration)
     }
 }
 
+// Look up the person in the owner_vehicles map
 std::vector<registration_plate> vehicle_register::owned_vehicles(isp person) const
 {
-    // Look up the person in the owner_vehicles map
     auto it = owner_vehicles.find(person);
     if (it != owner_vehicles.end())
     {
@@ -91,8 +83,11 @@ std::vector<registration_plate> vehicle_register::owned_vehicles(isp person) con
 std::ostream &operator<<(std::ostream &os, const vehicle_register &reg)
 {
     // Output each registration in the required format
-    for (const auto &[plate, owner] : reg.vehicles)
+    // Use owner_const_ref to avoid shadowing and make a non-const copy
+    for (const auto &[plate, owner_const_ref] : reg.vehicles)
     {
+        isp owner = owner_const_ref; // Create a non-const copy
+        // Assuming plate.to_string() is const-correct or handles const objects
         os << owner.to_string() << " " << plate.to_string() << '\n';
     }
     return os;
@@ -101,8 +96,8 @@ std::ostream &operator<<(std::ostream &os, const vehicle_register &reg)
 std::istream &operator>>(std::istream &is, vehicle_register &reg)
 {
     // Clear existing data
-    reg.vehicles.clear();
-    reg.owner_vehicles.clear();
+    reg.GetVehicles().clear();
+    reg.GetOwnerVehicles().clear();
 
     std::string line;
     while (std::getline(is, line) && !line.empty())

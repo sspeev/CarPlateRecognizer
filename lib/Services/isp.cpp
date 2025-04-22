@@ -1,4 +1,4 @@
-#include "../Contracts/isp.hpp"
+#include "Contracts/isp.hpp"
 #include <cstring>
 #include <stdexcept>
 #include <iostream>
@@ -49,12 +49,10 @@ int isp::GetYear() const
 {
     return year;
 }
-
 int isp::GetMonth() const
 {
     return month;
 }
-
 int isp::GetDay() const
 {
     return day;
@@ -68,17 +66,14 @@ void isp::SetYear(int value)
 {
     year = value;
 }
-
 void isp::SetMonth(int value)
 {
     month = value;
 }
-
 void isp::SetDay(int value)
 {
     day = value;
 }
-
 void isp::SetRegion(std::string value)
 {
     region = value;
@@ -178,10 +173,10 @@ const int NumberFixer(char *num)
     }
 }
 
-static bool is_valid_isp(const char *egn)
-{
-    // nqma da se zanimavam da implementiram toq tup algorithum
-}
+// static bool is_valid_isp(const char *egn)
+// {
+//     // nqma da se zanimavam da implementiram toq tup algorithum
+// }
 
 std::ostream &operator<<(std::ostream &os, const isp &egn)
 {
@@ -216,4 +211,29 @@ const char* isp::to_string()
     static char buffer[11]; // Large enough for year + month + day + null terminator
     snprintf(buffer, sizeof(buffer), "%02d%02d%02d", year, month, day);
     return buffer;
+}
+
+bool isp::operator<(const isp& other) const {
+    // First compare by year
+    if (year != other.year)
+        return year < other.year;
+    
+    // If years are equal, compare by month
+    if (month != other.month)
+        return month < other.month;
+    
+    // If months are equal, compare by day
+    if (day != other.day)
+        return day < other.day;
+    
+    // If all date components are equal, compare by region
+    return region < other.region;
+}
+
+bool isp::operator==(const isp& other) const {
+    // Two ISPs are equal if all their components match
+    return year == other.year &&
+           month == other.month &&
+           day == other.day &&
+           region == other.region;
 }
