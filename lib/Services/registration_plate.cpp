@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <cstring>
+#include <string>
 #include <fstream>
 #include "Contracts/registration_plate.hpp"
 
@@ -28,7 +29,8 @@ registration_plate::registration_plate(const char *plate) // constructor
         delete[] prefix;
         delete[] suffix;
         prefix = suffix = nullptr;
-        throw;
+
+        std::cerr << "Error: " << e.what() << std::endl;
     }
 }
 
@@ -90,46 +92,46 @@ const char *registration_plate::GetSuffix() const
     return suffix;
 }
 
-const registration_plate operator<(const registration_plate &plate1, const registration_plate &plate2)
+bool operator<(const registration_plate &plate1, const registration_plate &plate2)
 {
     // Compare prefixes first
     if (plate1.GetPrefix() && plate2.GetPrefix())
     {
         int prefixCmp = strcmp(plate1.GetPrefix(), plate2.GetPrefix());
         if (prefixCmp != 0)
-            return prefixCmp < 0 ? plate1 : plate2;
+            return prefixCmp < 0;
     }
-    else if (plate1.GetPrefix())
+    else if (!plate1.GetPrefix() && plate2.GetPrefix())
     {
-        return plate2;
+        return true;  // null prefix is less than any prefix
     }
-    else if (plate2.GetPrefix())
+    else if (plate1.GetPrefix() && !plate2.GetPrefix())
     {
-        return plate1;
+        return false; // any prefix is greater than null prefix
     }
 
     // Compare numbers if prefixes are equal
     if (plate1.GetNumber() != plate2.GetNumber())
     {
-        return plate1.GetNumber() < plate2.GetNumber() ? plate1 : plate2;
+        return plate1.GetNumber() < plate2.GetNumber();
     }
 
     // Compare suffixes if everything else is equal
     if (plate1.GetSuffix() && plate2.GetSuffix())
     {
         int suffixCmp = strcmp(plate1.GetSuffix(), plate2.GetSuffix());
-        return suffixCmp < 0 ? plate1 : plate2;
+        return suffixCmp < 0;
     }
-    else if (plate1.GetSuffix())
+    else if (!plate1.GetSuffix() && plate2.GetSuffix())
     {
-        return plate2;
+        return true;  // null suffix is less than any suffix
     }
-    else if (plate2.GetSuffix())
+    else if (plate1.GetSuffix() && !plate2.GetSuffix())
     {
-        return plate1;
+        return false; // any suffix is greater than null suffix
     }
 
-    return plate1; // They're equal
+    return false; // They're equal, so plate1 is not less than plate2
 }
 
 std::ostream &operator<<(std::ostream &os, const registration_plate &plate)
@@ -165,28 +167,7 @@ bool operator==(const registration_plate &plate1, const registration_plate &plat
     return true;
 }
 
-const char* registration_plate::to_string() const
+const std::string registration_plate::to_string() const
 {
-    // Use a static buffer for the result
-    static char buffer[9]; // Large enough for prefix + number + suffix + null terminator
-    
-    int pos = 0;
-    
-    // Add prefix if it exists
-    if (prefix) {
-        strcpy(buffer, prefix);
-        pos += strlen(prefix);
-    } else {
-        buffer[0] = '\0'; // Ensure buffer is initialized if no prefix
-    }
-    
-    // Add number (converting int to chars)
-    pos += sprintf(buffer + pos, "%d", number);
-    
-    // Add suffix if it exists
-    if (suffix) {
-        strcpy(buffer + pos, suffix);
-    }
-    
-    return buffer;
+    return std::string(prefix) + std::to_string(number) + std::string(suffix);
 }

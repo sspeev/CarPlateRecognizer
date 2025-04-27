@@ -1,7 +1,14 @@
 #include "Contracts/isp.hpp"
-#include <cstring>
-#include <stdexcept>
 #include <iostream>
+#include <stdexcept>
+#include <string>
+#include <cstring>
+#include <cstdio> // for sprintf_s and sscanf_s
+#include <cstdlib> // for std::strtol
+#include <algorithm> // for std::find
+
+
+isp::isp() = default;
 
 isp::isp(const char *input_isp) // constructor
     : year(0), month(0), day(0), region()
@@ -10,31 +17,33 @@ isp::isp(const char *input_isp) // constructor
     {
         if (input_isp && input_isp[0])
         {
-            char *year = new char[2];
-            char *month = new char[2];
-            char *day = new char[2];
-            char *region_number = new char[3];
-            sscanf(input_isp, "%2d%2d%2d%3d", year, month, day, region_number);
-            int year_INT = NumberFixer(year);
-            int month_INT = NumberFixer(month);
-            int day_INT = NumberFixer(day);
-            if (month_INT <= 12)
+            // Use safer conversion directly instead of dynamic arrays
+            int year_val, month_val, day_val, region_val;
+            if (sscanf_s(input_isp, "%2d%2d%2d%3d", &year_val, &month_val, &day_val, &region_val) == 4)
             {
-                SetYear(1900 + year_INT);
-                SetMonth(month_INT);
+                // Process month and year logic
+                if (month_val <= 12)
+                {
+                    SetYear(1900 + year_val);
+                    SetMonth(month_val);
+                }
+                else
+                {
+                    SetYear(2000 + year_val);
+                    SetMonth(month_val - 40);
+                }
+                SetDay(day_val);
+
+                // Convert region number to string
+                char region_str[4];
+                sprintf_s(region_str, sizeof(region_str), "%03d", region_val);
+                std::string region_name = RegionCalculator(region_str);
+                SetRegion(region_name);
             }
             else
             {
-                SetYear(2000 + year_INT);
-                SetMonth(month_INT - 40);
+                throw std::invalid_argument("failed to parse ISP");
             }
-            SetDay(day_INT);
-            std::string region_STR = RegionCalculator(region_number);
-            SetRegion(region_STR);
-            delete[] year;
-            delete[] month;
-            delete[] day;
-            delete[] region_number;
         }
         else
             throw std::invalid_argument("invalid input");
@@ -81,8 +90,9 @@ void isp::SetRegion(std::string value)
 
 const std::string isp::RegionCalculator(char *num)
 {
+    num_region = std::string(num);
     int firstNum = 0, SecondNum = 0, thirdNum = 0, result = 0;
-    sscanf(num, "%1d%1d%1d", &firstNum, &SecondNum, &thirdNum);
+    sscanf_s(num, "%1d%1d%1d", &firstNum, &SecondNum, &thirdNum);
 
     if (firstNum == 0)
     {
@@ -159,10 +169,10 @@ const std::string isp::RegionCalculator(char *num)
 }
 
 const int NumberFixer(char *num)
-
 {
     int firstNum = 0, SecondNum = 0;
-    sscanf(num, "%1d%1d", firstNum, SecondNum);
+    // Fix: Add & to get the address of the variables
+    sscanf_s(num, "%1d%1d", &firstNum, &SecondNum);
     if (firstNum == 0)
     {
         return SecondNum;
@@ -173,64 +183,88 @@ const int NumberFixer(char *num)
     }
 }
 
-// static bool is_valid_isp(const char *egn)
-// {
-//     // nqma da se zanimavam da implementiram toq tup algorithum
-// }
-
 std::ostream &operator<<(std::ostream &os, const isp &egn)
 {
     if (egn.day)
         os << egn.day;
-    if(egn.month)
+    if (egn.month)
         os << egn.month;
-    if(egn.year)
+    if (egn.year)
         os << egn.year;
     return os;
 }
-
-std::istream& operator>>(std::istream& is, isp& egn)
+std::istream &operator>>(std::istream &is, isp &egn)
 {
     char input[11]; // 10 digits + null terminator
-    if (is >> input) {
-        try {
+    if (is >> input)
+    {
+        try
+        {
             isp temp(input);
             egn = temp;
         }
-        catch (const std::exception& e) {
+        catch (const std::exception &e)
+        {
             // Mark stream as failed if parsing fails
             is.setstate(std::ios::failbit);
+            std::cerr << "Error: " << e.what() << '\n';
+            return is; // Return the stream in a failed state
         }
     }
     return is;
 }
 
-const char* isp::to_string()
+const std::string isp::to_string() const
 {
-    // Use a static buffer for the result
-    static char buffer[11]; // Large enough for year + month + day + null terminator
-    snprintf(buffer, sizeof(buffer), "%02d%02d%02d", year, month, day);
-    return buffer;
+    std::string result;
+    if(year < 10)
+    {
+        result += "0" + std::to_string(year);
+    }
+    else
+    {
+        result += std::to_string(year);
+    }
+
+    if(month < 10)
+    {
+        result += "0" + std::to_string(month);
+    }
+    else
+    {
+        result += std::to_string(month);
+    }
+    if(day < 10)
+    {
+        result += "0" + std::to_string(day);
+    }
+    else
+    {
+        result += std::to_string(day);
+    }
+    result += num_region;
+    return result;
 }
 
-bool isp::operator<(const isp& other) const {
-    // First compare by year
+bool isp::operator<(const isp &other) const
+{
     if (year != other.year)
         return year < other.year;
-    
-    // If years are equal, compare by month
+
     if (month != other.month)
         return month < other.month;
-    
-    // If months are equal, compare by day
+
     if (day != other.day)
         return day < other.day;
+
+    if (region.compare(other.region) < 0)
+        return true;
     
-    // If all date components are equal, compare by region
-    return region < other.region;
+    return false;  // Equal in all respects
 }
 
-bool isp::operator==(const isp& other) const {
+bool isp::operator==(const isp &other) const
+{
     // Two ISPs are equal if all their components match
     return year == other.year &&
            month == other.month &&

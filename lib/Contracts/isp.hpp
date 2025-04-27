@@ -1,4 +1,6 @@
 #pragma once
+#include <iostream>
+#include <string>
 
 /// A class which represents EGN (Edinen grazhdanski nomer)
 class isp
@@ -8,9 +10,14 @@ private:
     int month = 0;
     int day = 0;
     std::string region = "";
+    std::string num_region = "";
+
+    const std::string RegionCalculator(char *num);
+    const int NumberFixer(char *num);
 
 public:
-    isp(const char *); // ctor
+    isp();
+    isp(const char * input); // ctor
     // ~isp();              // dtor
     // isp(const isp &egn); // cpyctor
     // isp &operator=(const isp &egn);
@@ -26,14 +33,10 @@ public:
     void SetRegion(std::string region);
 
     // static bool is_valid_ucn(const char *egn);
-    const char *to_string();
+    const std::string to_string() const;
 
     friend std::ostream &operator<<(std::ostream &os, const isp &egn);
     friend std::istream &operator>>(std::istream &is, isp &egn);
     bool operator<(const isp &other) const;
     bool operator==(const isp &other) const;
-
-private:
-    const std::string RegionCalculator(char *num);
-    const int NumberFixer(char *num);
 };

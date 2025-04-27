@@ -1,5 +1,9 @@
 #include "Contracts/vehicle_register.hpp"
+#include "Contracts/isp.hpp"
+#include "Contracts/registration_plate.hpp"
+#include <vector>
 #include <sstream>
+#include <string>
 
 vehicle_register::vehicle_register()//constructor
     : vehicles(), owner_vehicles()
@@ -82,17 +86,16 @@ std::vector<registration_plate> vehicle_register::owned_vehicles(isp person) con
 
 std::ostream &operator<<(std::ostream &os, const vehicle_register &reg)
 {
-    // Output each registration in the required format
-    // Use owner_const_ref to avoid shadowing and make a non-const copy
     for (const auto &[plate, owner_const_ref] : reg.vehicles)
     {
-        isp owner = owner_const_ref; // Create a non-const copy
-        // Assuming plate.to_string() is const-correct or handles const objects
+        isp owner = owner_const_ref;
         os << owner.to_string() << " " << plate.to_string() << '\n';
     }
     return os;
 }
 
+
+//REVIEW
 std::istream &operator>>(std::istream &is, vehicle_register &reg)
 {
     // Clear existing data
@@ -119,8 +122,10 @@ std::istream &operator>>(std::istream &is, vehicle_register &reg)
             }
             catch (const std::exception &e)
             {
-                // Skip invalid entries
-                continue;
+                // Handle parsing errors
+                std::cerr << "Error: " << e.what() << '\n';
+                is.setstate(std::ios::failbit); // Set failbit on stream
+                break; // Exit loop on error
             }
         }
         else
