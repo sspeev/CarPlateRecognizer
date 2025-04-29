@@ -7,7 +7,6 @@
 #include "isp.hpp"
 #include "registration_plate.hpp"
 
-
 class vehicle_register
 {
 private:

@@ -1,27 +1,34 @@
 #pragma once
+#include <iostream>
+#include <string>
 
-class registration_plate {
+class registration_plate
+{
 private:
-    char* prefix = nullptr;
-    int number = 0;
-    char* suffix = nullptr;
+    std::string prefix;
+    int number;
+    std::string suffix;
 
 public:
-    registration_plate(const char* plate = nullptr);
-    ~registration_plate();
+    registration_plate();
+    registration_plate(const char *plate = nullptr);
+    
 
-    void SetPrefix(const char*);
-    const char* GetPrefix() const;
+    void SetPrefix(const std::string &input);
+    const std::string GetPrefix() const;
 
-    void SetNumber(int);
+    void SetNumber(int n);
     int GetNumber() const;
 
-    void SetSuffix(const char*);
-    const char* GetSuffix() const;
+    void SetSuffix(const std::string &s);
+    const std::string GetSuffix() const;
 
-    friend std::ostream& operator<<(std::ostream& os, const registration_plate& plate);
-    friend std::istream& operator>>(std::istream& is, registration_plate& plate);
-    friend bool operator==(const registration_plate& plate1, const registration_plate& plate2);
-    friend bool operator<(const registration_plate& plate1, const registration_plate& plate2);
     const std::string to_string() const;
+
+    // Comparison operators
+    friend bool operator==(const registration_plate &plate1, const registration_plate &plate2);
+    friend bool operator<(const registration_plate &plate1, const registration_plate &plate2);
+
+    friend std::ostream &operator<<(std::ostream &os, const registration_plate &plate);
+    friend std::istream &operator>>(std::istream &is, registration_plate &plate);
 };

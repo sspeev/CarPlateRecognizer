@@ -5,8 +5,8 @@
 #include <fstream>
 #include "Contracts/registration_plate.hpp"
 
-registration_plate::registration_plate(const char *plate) // constructor
-    : prefix(nullptr), number(0), suffix(nullptr)
+registration_plate::registration_plate() = default;
+registration_plate::registration_plate(const char *plate)
 {
     if (!plate || !plate[0])
         return;
@@ -20,42 +20,30 @@ registration_plate::registration_plate(const char *plate) // constructor
         if (sscanf(plate, "%2s%d%2s", pref, &num, suf) != 3)
             throw std::invalid_argument("Invalid format. Expected: XXNNNNXX");
 
-        SetPrefix(pref);
+        SetPrefix(std::string(pref));
         SetNumber(num);
-        SetSuffix(suf);
+        SetSuffix(std::string(suf));
     }
     catch (const std::invalid_argument &e)
     {
-        delete[] prefix;
-        delete[] suffix;
-        prefix = suffix = nullptr;
+        delete[] pref;
+        delete[] suf;
+        pref = nullptr;
+        suf = nullptr;
 
         std::cerr << "Error: " << e.what() << std::endl;
     }
 }
 
-registration_plate::~registration_plate() // destructor
+void registration_plate::SetPrefix(const std::string &input)
 {
-    delete[] prefix;
-    delete[] suffix;
-}
-
-void registration_plate::SetPrefix(const char *input)
-{
-    if (input && strlen(input) > 2)
+    if (input.length() > 2)
         throw std::invalid_argument("Prefix must be 0-2 characters");
 
-    delete[] prefix;
-    prefix = nullptr;
-
-    if (input)
-    {
-        prefix = new char[strlen(input) + 1];
-        strcpy(prefix, input);
-    }
+    prefix = input;
 }
 
-const char *registration_plate::GetPrefix() const
+const std::string registration_plate::GetPrefix() const
 {
     return prefix;
 }
@@ -72,22 +60,15 @@ int registration_plate::GetNumber() const
     return number;
 }
 
-void registration_plate::SetSuffix(const char *input)
+void registration_plate::SetSuffix(const std::string &input)
 {
-    if (input && strlen(input) > 2)
+    if (input.length() > 2)
         throw std::invalid_argument("Suffix must be 0-2 characters");
 
-    delete[] suffix;
-    suffix = nullptr;
-
-    if (input)
-    {
-        suffix = new char[strlen(input) + 1];
-        strcpy(suffix, input);
-    }
+    suffix = input;
 }
 
-const char *registration_plate::GetSuffix() const
+const std::string registration_plate::GetSuffix() const
 {
     return suffix;
 }
@@ -95,17 +76,17 @@ const char *registration_plate::GetSuffix() const
 bool operator<(const registration_plate &plate1, const registration_plate &plate2)
 {
     // Compare prefixes first
-    if (plate1.GetPrefix() && plate2.GetPrefix())
+    if (plate1.GetPrefix() != "" && plate2.GetPrefix() != "")
     {
-        int prefixCmp = strcmp(plate1.GetPrefix(), plate2.GetPrefix());
+        int prefixCmp = plate1.GetPrefix().compare(plate2.GetPrefix());
         if (prefixCmp != 0)
             return prefixCmp < 0;
     }
-    else if (!plate1.GetPrefix() && plate2.GetPrefix())
+    else if (plate1.GetPrefix() == "" && plate2.GetPrefix() != "")
     {
         return true;  // null prefix is less than any prefix
     }
-    else if (plate1.GetPrefix() && !plate2.GetPrefix())
+    else if (plate1.GetPrefix() != "" && plate2.GetPrefix() == "")
     {
         return false; // any prefix is greater than null prefix
     }
@@ -117,16 +98,16 @@ bool operator<(const registration_plate &plate1, const registration_plate &plate
     }
 
     // Compare suffixes if everything else is equal
-    if (plate1.GetSuffix() && plate2.GetSuffix())
+    if (plate1.GetSuffix() != "" && plate2.GetSuffix() != "")
     {
-        int suffixCmp = strcmp(plate1.GetSuffix(), plate2.GetSuffix());
+        int suffixCmp = plate1.GetPrefix().compare(plate2.GetPrefix());
         return suffixCmp < 0;
     }
-    else if (!plate1.GetSuffix() && plate2.GetSuffix())
+    else if (plate1.GetSuffix() == "" && plate2.GetSuffix() != "")
     {
         return true;  // null suffix is less than any suffix
     }
-    else if (plate1.GetSuffix() && !plate2.GetSuffix())
+    else if (plate1.GetSuffix() != "" && plate2.GetSuffix() == "")
     {
         return false; // any suffix is greater than null suffix
     }
@@ -136,10 +117,10 @@ bool operator<(const registration_plate &plate1, const registration_plate &plate
 
 std::ostream &operator<<(std::ostream &os, const registration_plate &plate)
 {
-    if (plate.prefix)
+    if (plate.prefix != "")
         os << plate.prefix;
     os << plate.number;
-    if (plate.suffix)
+    if (plate.suffix != "")
         os << plate.suffix;
     return os;
 }
@@ -151,17 +132,17 @@ bool operator==(const registration_plate &plate1, const registration_plate &plat
         return false;
 
     // Compare prefixes
-    if ((plate1.GetPrefix() == nullptr) != (plate2.GetPrefix() == nullptr))
+    if ((plate1.GetPrefix() == "") != (plate2.GetPrefix() == ""))
         return false;
 
-    if (plate1.GetPrefix() && strcmp(plate1.GetPrefix(), plate2.GetPrefix()) != 0)
+    if (plate1.GetPrefix() != "" && plate1.GetPrefix().compare(plate2.GetPrefix()) != 0)
         return false;
 
     // Compare suffixes
-    if ((plate1.GetSuffix() == nullptr) != (plate2.GetSuffix() == nullptr))
+    if ((plate1.GetSuffix() == "") != (plate2.GetSuffix() == ""))
         return false;
 
-    if (plate1.GetSuffix() && strcmp(plate1.GetSuffix(), plate2.GetSuffix()) != 0)
+    if (plate1.GetSuffix() != "" && plate1.GetSuffix().compare(plate2.GetSuffix()) != 0)
         return false;
 
     return true;
@@ -169,5 +150,5 @@ bool operator==(const registration_plate &plate1, const registration_plate &plat
 
 const std::string registration_plate::to_string() const
 {
-    return std::string(prefix) + std::to_string(number) + std::string(suffix);
+    return prefix + std::to_string(number) + suffix;
 }

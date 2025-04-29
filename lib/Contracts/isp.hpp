@@ -2,15 +2,14 @@
 #include <iostream>
 #include <string>
 
-/// A class which represents EGN (Edinen grazhdanski nomer)
 class isp
 {
 private:
-    int year = 0;
-    int month = 0;
-    int day = 0;
-    std::string region = "";
-    std::string num_region = "";
+    int year;
+    int month;
+    int day;
+    std::string region;
+    std::string num_region;
 
     const std::string RegionCalculator(char *num);
     const int NumberFixer(char *num);

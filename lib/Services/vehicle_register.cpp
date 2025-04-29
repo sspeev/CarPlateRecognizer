@@ -5,11 +5,7 @@
 #include <sstream>
 #include <string>
 
-vehicle_register::vehicle_register()//constructor
-    : vehicles(), owner_vehicles()
-{
-    // Empty constructor creates empty maps
-}
+vehicle_register::vehicle_register() = default;
 
 void vehicle_register::Register(registration_plate registration, isp owner)
 {
