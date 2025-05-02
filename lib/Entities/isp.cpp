@@ -10,8 +10,8 @@
 
 isp::isp() = default;
 
-isp::isp(const char *input_isp) // constructor
-    : year(0), month(0), day(0), region()
+isp::isp(const char *input_isp)
+    : year(), month(), day(), region()
 {
     try
     {

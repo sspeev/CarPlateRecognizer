@@ -1,55 +1,44 @@
 cmake_minimum_required(VERSION 3.10)
+
 project("Homework" VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Enable testing
-enable_testing()
+add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
 
-# Include directories
-include_directories(${CMAKE_SOURCE_DIR})
-include_directories(${CMAKE_SOURCE_DIR}/lib)
+include(CMakePrintHelpers)
 
-# Create library with all required source files
-add_library(carRecognizer
-    lib/Services/isp.cpp
-    lib/Services/registration_plate.cpp
-    lib/Services/vehicle_register.cpp
-)
+cmake_print_variables(CMAKE_MODULE_PATH)
+cmake_print_variables(CMAKE_PREFIX_PATH)
 
-# Main executable
-add_executable(Homework main.cpp)
+include(CTest)
 
-# Link libraries
-target_link_libraries(
-    Homework
-    PRIVATE
-        carRecognizer
-)
+if(BUILD_TESTING)
+    message(STATUS "Make Catch2 available...")
 
-# Set up Catch2
-include(FetchContent)
-FetchContent_Declare(
-    Catch2
-    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG v3.4.0
-)
-FetchContent_MakeAvailable(Catch2)
+    include(FetchContent)
 
-# Create test executable
-add_executable(carRecognizer_tests
-    lib/tests/tests_main.cpp
-    lib/tests/isp_tests.cpp
-    lib/tests/registration_plate_tests.cpp
-)
+    FetchContent_Declare(
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG v3.4.0
+    )
+    FetchContent_MakeAvailable(Catch2)
 
-target_link_libraries(carRecognizer_tests
-    PRIVATE
-        carRecognizer
-        Catch2::Catch2WithMain
-)
 
-# Register tests
-include(Catch)
-catch_discover_tests(carRecognizer_tests)
+    include(Catch)
+
+    cmake_print_variables(Catch2_DIR)
+    cmake_print_variables(catch2_SOURCE_DIR)
+    cmake_print_variables(Catch2_SOURCE_DIR)
+    cmake_print_variables(CMAKE_MODULE_PATH)
+
+endif()
+
+include_directories("lib")
+add_subdirectory(lib)
+
+if(BUILD_TESTING)
+    add_subdirectory(Tests)
+endif()
