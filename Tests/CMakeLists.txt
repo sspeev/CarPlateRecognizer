@@ -11,7 +11,7 @@ target_link_libraries(
 target_sources(
     unit-tests
     PRIVATE
-        "isp_tests.cpp"
+        "ucn_tests.cpp"
         "registration_plate_tests.cpp"
 )
 

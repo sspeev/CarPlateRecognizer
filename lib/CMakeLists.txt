@@ -1,11 +1,11 @@
 add_library(CarPlateRecognizer STATIC
     # Header files
-    "Contracts/isp.hpp"
+    "Contracts/ucn.hpp"
     "Contracts/registration_plate.hpp"
     "Contracts/vehicle_register.hpp"
 
     # Source files
-    "Entities/isp.cpp"
+    "Entities/ucn.cpp"
     "Entities/registration_plate.cpp"
     "Entities/vehicle_register.cpp"
 )

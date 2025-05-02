@@ -1,9 +1,9 @@
+#include "Contracts/registration_plate.hpp"
 #include <iostream>
 #include <stdexcept>
 #include <cstring>
 #include <string>
 #include <fstream>
-#include "Contracts/registration_plate.hpp"
 
 registration_plate::registration_plate() = default;
 registration_plate::registration_plate(const char *plate)

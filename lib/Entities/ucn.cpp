@@ -1,25 +1,24 @@
-#include "Contracts/isp.hpp"
+#include "Contracts/ucn.hpp"
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <cstring>
-#include <cstdio> // for sprintf_s and sscanf_s
-#include <cstdlib> // for std::strtol
+#include <cstdio>    // for sprintf_s and sscanf_s
+#include <cstdlib>   // for std::strtol
 #include <algorithm> // for std::find
 
+ucn::ucn() = default;
 
-isp::isp() = default;
-
-isp::isp(const char *input_isp)
+ucn::ucn(const char *input_ucn)
     : year(), month(), day(), region()
 {
     try
     {
-        if (input_isp && input_isp[0])
+        if (input_ucn && input_ucn[0])
         {
             // Use safer conversion directly instead of dynamic arrays
             int year_val, month_val, day_val, region_val;
-            if (sscanf_s(input_isp, "%2d%2d%2d%3d", &year_val, &month_val, &day_val, &region_val) == 4)
+            if (sscanf_s(input_ucn, "%2d%2d%2d%3d", &year_val, &month_val, &day_val, &region_val) == 4)
             {
                 // Process month and year logic
                 if (month_val <= 12)
@@ -42,7 +41,7 @@ isp::isp(const char *input_isp)
             }
             else
             {
-                throw std::invalid_argument("failed to parse ISP");
+                throw std::invalid_argument("failed to parse UCN");
             }
         }
         else
@@ -54,41 +53,41 @@ isp::isp(const char *input_isp)
     }
 }
 
-int isp::GetYear() const
+int ucn::GetYear() const
 {
     return year;
 }
-int isp::GetMonth() const
+int ucn::GetMonth() const
 {
     return month;
 }
-int isp::GetDay() const
+int ucn::GetDay() const
 {
     return day;
 }
-std::string isp::GetRegion() const
+std::string ucn::GetRegion() const
 {
     return region;
 }
 
-void isp::SetYear(int value)
+void ucn::SetYear(int value)
 {
     year = value;
 }
-void isp::SetMonth(int value)
+void ucn::SetMonth(int value)
 {
     month = value;
 }
-void isp::SetDay(int value)
+void ucn::SetDay(int value)
 {
     day = value;
 }
-void isp::SetRegion(std::string value)
+void ucn::SetRegion(std::string value)
 {
     region = value;
 }
 
-const std::string isp::RegionCalculator(char *num)
+const std::string ucn::RegionCalculator(char *num)
 {
     num_region = std::string(num);
     int firstNum = 0, SecondNum = 0, thirdNum = 0, result = 0;
@@ -183,7 +182,7 @@ const int NumberFixer(char *num)
     }
 }
 
-std::ostream &operator<<(std::ostream &os, const isp &egn)
+std::ostream &operator<<(std::ostream &os, const ucn &egn)
 {
     if (egn.day)
         os << egn.day;
@@ -193,14 +192,14 @@ std::ostream &operator<<(std::ostream &os, const isp &egn)
         os << egn.year;
     return os;
 }
-std::istream &operator>>(std::istream &is, isp &egn)
+std::istream &operator>>(std::istream &is, ucn &egn)
 {
     char input[11]; // 10 digits + null terminator
     if (is >> input)
     {
         try
         {
-            isp temp(input);
+            ucn temp(input);
             egn = temp;
         }
         catch (const std::exception &e)
@@ -214,10 +213,10 @@ std::istream &operator>>(std::istream &is, isp &egn)
     return is;
 }
 
-const std::string isp::to_string() const
+const std::string ucn::to_string() const
 {
     std::string result;
-    if(year < 10)
+    if (year < 10)
     {
         result += "0" + std::to_string(year);
     }
@@ -226,7 +225,7 @@ const std::string isp::to_string() const
         result += std::to_string(year);
     }
 
-    if(month < 10)
+    if (month < 10)
     {
         result += "0" + std::to_string(month);
     }
@@ -234,7 +233,7 @@ const std::string isp::to_string() const
     {
         result += std::to_string(month);
     }
-    if(day < 10)
+    if (day < 10)
     {
         result += "0" + std::to_string(day);
     }
@@ -246,7 +245,7 @@ const std::string isp::to_string() const
     return result;
 }
 
-bool isp::operator<(const isp &other) const
+bool ucn::operator<(const ucn &other) const
 {
     if (year != other.year)
         return year < other.year;
@@ -259,15 +258,50 @@ bool isp::operator<(const isp &other) const
 
     if (region.compare(other.region) < 0)
         return true;
-    
-    return false;  // Equal in all respects
+
+    return false; // Equal in all respects
 }
 
-bool isp::operator==(const isp &other) const
+bool ucn::operator==(const ucn &other) const
 {
-    // Two ISPs are equal if all their components match
+    // Two UCNs are equal if all their components match
     return year == other.year &&
            month == other.month &&
            day == other.day &&
            region == other.region;
+}
+
+bool ucn::is_valid_ucn(const char *egn)
+{
+    // Check if the UCN (Unified Civil Number) is valid
+    // Implementation of the Bulgarian UCN validation algorithm
+    if (!egn || strlen(egn) != 10)
+        return false;
+
+    // Check if all characters are digits
+    for (int i = 0; i < 10; i++)
+    {
+        if (egn[i] < '0' || egn[i] > '9')
+            return false;
+    }
+
+    // Weights for each position
+    const int weights[9] = {2, 4, 8, 5, 10, 9, 7, 3, 6};
+    int sum = 0;
+
+    // Calculate the weighted sum of the first 9 digits
+    for (int i = 0; i < 9; i++)
+    {
+        sum += (egn[i] - '0') * weights[i];
+    }
+
+    // Calculate the remainder when divided by 11
+    int remainder = sum % 11;
+
+    // If remainder is 10, it should be treated as 0
+    if (remainder == 10)
+        remainder = 0;
+
+    // Check if the calculated control digit matches the actual 10th digit
+    return (remainder == (egn[9] - '0'));
 }

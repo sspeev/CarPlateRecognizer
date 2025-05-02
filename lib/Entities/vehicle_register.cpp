@@ -1,5 +1,5 @@
 #include "Contracts/vehicle_register.hpp"
-#include "Contracts/isp.hpp"
+#include "Contracts/ucn.hpp"
 #include "Contracts/registration_plate.hpp"
 #include <vector>
 #include <sstream>
@@ -7,13 +7,13 @@
 
 vehicle_register::vehicle_register() = default;
 
-void vehicle_register::Register(registration_plate registration, isp owner)
+void vehicle_register::Register(registration_plate registration, ucn owner)
 {
     // Check if the vehicle is already registered to a different owner
     auto it = vehicles.find(registration);
     if (it != vehicles.end())
     {
-        // Compare ISP numbers - if they're not the same, throw exception
+        // Compare ucn numbers - if they're not the same, throw exception
         if (!(it->second.GetYear() == owner.GetYear() &&
               it->second.GetMonth() == owner.GetMonth() &&
               it->second.GetDay() == owner.GetDay() &&
@@ -46,7 +46,7 @@ void vehicle_register::deregister(registration_plate registration)
     if (it != vehicles.end())
     {
         // Get the current owner
-        isp owner = it->second;
+        ucn owner = it->second;
 
         // Remove from the owner's list of vehicles
         auto &owner_list = owner_vehicles[owner];
@@ -68,7 +68,7 @@ void vehicle_register::deregister(registration_plate registration)
 }
 
 // Look up the person in the owner_vehicles map
-std::vector<registration_plate> vehicle_register::owned_vehicles(isp person) const
+std::vector<registration_plate> vehicle_register::owned_vehicles(ucn person) const
 {
     auto it = owner_vehicles.find(person);
     if (it != owner_vehicles.end())
@@ -84,7 +84,7 @@ std::ostream &operator<<(std::ostream &os, const vehicle_register &reg)
 {
     for (const auto &[plate, owner_const_ref] : reg.vehicles)
     {
-        isp owner = owner_const_ref;
+        ucn owner = owner_const_ref;
         os << owner.to_string() << " " << plate.to_string() << '\n';
     }
     return os;
@@ -109,8 +109,8 @@ std::istream &operator>>(std::istream &is, vehicle_register &reg)
         {
             try
             {
-                // Parse as isp and registration_plate
-                isp owner(owner_str.c_str());
+                // Parse as ucn and registration_plate
+                ucn owner(owner_str.c_str());
                 registration_plate plate(plate_str.c_str());
 
                 // Register the vehicle

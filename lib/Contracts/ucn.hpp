@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-class isp
+class ucn
 {
 private:
     int year;
@@ -15,11 +15,11 @@ private:
     const int NumberFixer(char *num);
 
 public:
-    isp();
-    isp(const char * input); // ctor
-    // ~isp();              // dtor
-    // isp(const isp &egn); // cpyctor
-    // isp &operator=(const isp &egn);
+    ucn();
+    ucn(const char *input); // ctor
+    // ~ucn();              // dtor
+    // ucn(const ucn &egn); // cpyctor
+    // ucn &operator=(const ucn &egn);
 
     int GetYear() const;
     int GetMonth() const;
@@ -31,11 +31,11 @@ public:
     void SetDay(int day);
     void SetRegion(std::string region);
 
-    // static bool is_valid_ucn(const char *egn);
+    static bool is_valid_ucn(const char *egn);
     const std::string to_string() const;
 
-    friend std::ostream &operator<<(std::ostream &os, const isp &egn);
-    friend std::istream &operator>>(std::istream &is, isp &egn);
-    bool operator<(const isp &other) const;
-    bool operator==(const isp &other) const;
+    friend std::ostream &operator<<(std::ostream &os, const ucn &egn);
+    friend std::istream &operator>>(std::istream &is, ucn &egn);
+    bool operator<(const ucn &other) const;
+    bool operator==(const ucn &other) const;
 };
