@@ -9,30 +9,24 @@ vehicle_register::vehicle_register() = default;
 
 void vehicle_register::Register(registration_plate registration, ucn owner)
 {
-    // Check if the vehicle is already registered to a different owner
+    // Check if the vehicle is already registered to any owner
     auto it = vehicles.find(registration);
     if (it != vehicles.end())
     {
-        // Compare ucn numbers - if they're not the same, throw exception
-        if (!(it->second.GetYear() == owner.GetYear() &&
-              it->second.GetMonth() == owner.GetMonth() &&
-              it->second.GetDay() == owner.GetDay() &&
-              it->second.GetRegion() == owner.GetRegion()))
+        // Vehicle is already registered
+        if (!(it->second == owner))
         {
+            // Cannot register to a different owner
             throw std::invalid_argument("Vehicle is already registered to another owner");
         }
-    }
-
-    else
-    {
-        // If the vehicle is not registered, check if the owner already has it
-        auto &owner_list = owner_vehicles[owner];
-        if (std::find(owner_list.begin(), owner_list.end(), registration) != owner_list.end())
+        else
         {
+            // Cannot register to the same owner twice
             throw std::invalid_argument("Vehicle is already registered to this owner");
         }
     }
 
+    // Register the vehicle to the owner
     vehicles[registration] = owner;
 
     // Add to the owner's list of vehicles
@@ -41,30 +35,29 @@ void vehicle_register::Register(registration_plate registration, ucn owner)
 
 void vehicle_register::deregister(registration_plate registration)
 {
-    // Find the vehicle in the map
+    // Find the vehicle in the registry
     auto it = vehicles.find(registration);
     if (it != vehicles.end())
     {
-        // Get the current owner
+        // Get the owner of the vehicle
         ucn owner = it->second;
 
-        // Remove from the owner's list of vehicles
-        auto &owner_list = owner_vehicles[owner];
-        auto vehicle_it = std::find(owner_list.begin(), owner_list.end(), registration);
-        if (vehicle_it != owner_list.end())
-        {
-            owner_list.erase(vehicle_it);
-        }
+        // Remove the vehicle from the registry
+        vehicles.erase(it);
 
-        // If the owner no longer has any vehicles, remove from the map
+        // Find the vehicle in the owner's list and remove it
+        auto &owner_list = owner_vehicles[owner];
+        owner_list.erase(
+            std::remove(owner_list.begin(), owner_list.end(), registration),
+            owner_list.end());
+
+        // If the owner has no more vehicles, remove the owner entry
         if (owner_list.empty())
         {
             owner_vehicles.erase(owner);
         }
-
-        // Remove the vehicle registration
-        vehicles.erase(it);
     }
+    // Silently ignore if the vehicle is not registered (as specified in the test)
 }
 
 // Look up the person in the owner_vehicles map
@@ -75,23 +68,21 @@ std::vector<registration_plate> vehicle_register::owned_vehicles(ucn person) con
     {
         return it->second;
     }
-
-    // Return empty vector if not found
-    return {};
+    return std::vector<registration_plate>(); // Return empty vector if owner not found
 }
 
 std::ostream &operator<<(std::ostream &os, const vehicle_register &reg)
 {
-    for (const auto &[plate, owner_const_ref] : reg.vehicles)
+    // Output each owner and their vehicles
+    for (const auto &pair : reg.vehicles)
     {
-        ucn owner = owner_const_ref;
-        os << owner.to_string() << " " << plate.to_string() << '\n';
+        const registration_plate &plate = pair.first;
+        const ucn &owner = pair.second;
+        os << owner.to_string() << " " << plate.to_string() << "\n";
     }
     return os;
 }
 
-
-//REVIEW
 std::istream &operator>>(std::istream &is, vehicle_register &reg)
 {
     // Clear existing data
@@ -116,12 +107,11 @@ std::istream &operator>>(std::istream &is, vehicle_register &reg)
                 // Register the vehicle
                 reg.Register(plate, owner);
             }
-            catch (const std::exception &e)
+            catch (const std::exception &)
             {
-                // Handle parsing errors
-                std::cerr << "Error: " << e.what() << '\n';
-                is.setstate(std::ios::failbit); // Set failbit on stream
-                break; // Exit loop on error
+                // If parsing fails, set failbit on stream
+                is.setstate(std::ios::failbit);
+                break;
             }
         }
         else

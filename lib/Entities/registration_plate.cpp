@@ -14,28 +14,50 @@ registration_plate::registration_plate(const char *plate)
     char *pref = new char[3];
     int num = 0;
     char *suf = new char[3];
-
     try
     {
-        if (sscanf(plate, "%2s%d%2s", pref, &num, suf) != 3)
+
+        if (sscanf(plate, "%2s%4d%2s", pref, &num, suf) != 3 || strlen(plate) != 8)
         {
             delete[] pref;
             delete[] suf;
+            pref = nullptr;
+            suf = nullptr;
             throw std::invalid_argument("Invalid format. Expected: XXNNNNXX");
         }
-
+        if (pref[0] < 'A' || pref[0] > 'Z' || pref[1] < 'A' || pref[1] > 'Z')
+        {
+            delete[] pref;
+            delete[] suf;
+            pref = nullptr;
+            suf = nullptr;
+            throw std::invalid_argument("Invalid prefix. Expected: XX");
+        }
+        if (suf[0] < 'A' || suf[0] > 'Z' || suf[1] < 'A' || suf[1] > 'Z')
+        {
+            delete[] pref;
+            delete[] suf;
+            pref = nullptr;
+            suf = nullptr;
+            throw std::invalid_argument("Invalid suffix. Expected: XX");
+        }
         SetPrefix(std::string(pref));
         SetNumber(num);
         SetSuffix(std::string(suf));
-        
+
         // Free memory after successful parsing
         delete[] pref;
         delete[] suf;
+        pref = nullptr;
+        suf = nullptr;
     }
     catch (const std::invalid_argument &e)
     {
-        delete[] pref;
-        delete[] suf;
+        if (pref != nullptr || suf != nullptr)
+        {
+            delete[] pref;
+            delete[] suf;
+        }
         throw; // Re-throw the exception after cleanup
     }
 }
@@ -111,5 +133,10 @@ bool operator==(const registration_plate &plate1, const registration_plate &plat
 
 const std::string registration_plate::to_string() const
 {
-    return prefix + std::to_string(number) + suffix;
+    std::string result = prefix + std::to_string(number) + suffix;
+    for (auto &c : result)
+    {
+        c = std::toupper(c);
+    }
+    return result;
 }

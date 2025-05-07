@@ -16,10 +16,7 @@ private:
 
 public:
     ucn();
-    ucn(const char *input); // ctor
-    // ~ucn();              // dtor
-    // ucn(const ucn &egn); // cpyctor
-    // ucn &operator=(const ucn &egn);
+    ucn(const char *input);
 
     int GetYear() const;
     int GetMonth() const;

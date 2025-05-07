@@ -4,15 +4,16 @@ add_executable(unit-tests)
 target_link_libraries(
     unit-tests
     PRIVATE
-        CarPlateRecognizer
-        Catch2::Catch2WithMain
+    CarPlateRecognizer
+    Catch2::Catch2WithMain
 )
 
 target_sources(
     unit-tests
     PRIVATE
-        "ucn_tests.cpp"
-        "registration_plate_tests.cpp"
+    "ucn_tests.cpp"
+    "registration_plate_tests.cpp"
+    "vehicle_register_tests.cpp"
 )
 
 # Include the Catch2 discovery module

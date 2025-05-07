@@ -1,4 +1,7 @@
+#ifndef REGISTRATION_PLATE_HPP
+#define REGISTRATION_PLATE_HPP
 #pragma once
+
 #include <iostream>
 #include <string>
 
@@ -12,7 +15,6 @@ private:
 public:
     registration_plate();
     registration_plate(const char *plate = nullptr);
-    
 
     void SetPrefix(const std::string &input);
     const std::string GetPrefix() const;
@@ -32,3 +34,5 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const registration_plate &plate);
     friend std::istream &operator>>(std::istream &is, registration_plate &plate);
 };
+
+#endif // REGISTRATION_PLATE_HPP

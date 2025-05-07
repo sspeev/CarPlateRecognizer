@@ -47,7 +47,7 @@ ucn::ucn(const char *input_ucn)
         SetRegion(region_name);
     }
     else
-        throw std::invalid_argument("failed to parse UCN");
+        throw std::invalid_argument("Failed to parse UCN");
 }
 
 int ucn::GetYear() const
@@ -173,7 +173,6 @@ const std::string ucn::RegionCalculator(char *num)
 const int NumberFixer(char *num)
 {
     int firstNum = 0, SecondNum = 0;
-    // Fix: Add & to get the address of the variables
     sscanf_s(num, "%1d%1d", &firstNum, &SecondNum);
     if (firstNum == 0)
     {
@@ -262,12 +261,11 @@ bool ucn::operator<(const ucn &other) const
     if (region.compare(other.region) < 0)
         return true;
 
-    return false; // Equal in all respects
+    return false; // Equal
 }
 
 bool ucn::operator==(const ucn &other) const
 {
-    // Two UCNs are equal if all their components match
     return year == other.year &&
            month == other.month &&
            day == other.day &&
