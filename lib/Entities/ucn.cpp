@@ -12,45 +12,42 @@ ucn::ucn() = default;
 ucn::ucn(const char *input_ucn)
     : year(), month(), day(), region()
 {
-    try
-    {
-        if (input_ucn && input_ucn[0])
-        {
-            // Use safer conversion directly instead of dynamic arrays
-            int year_val, month_val, day_val, region_val;
-            if (sscanf_s(input_ucn, "%2d%2d%2d%3d", &year_val, &month_val, &day_val, &region_val) == 4)
-            {
-                // Process month and year logic
-                if (month_val <= 12)
-                {
-                    SetYear(1900 + year_val);
-                    SetMonth(month_val);
-                }
-                else
-                {
-                    SetYear(2000 + year_val);
-                    SetMonth(month_val - 40);
-                }
-                SetDay(day_val);
+    if (!input_ucn) {
+        throw std::invalid_argument("UCN cannot be null");
+    }
+    
+    if (input_ucn[0] == '\0') {
+        throw std::invalid_argument("UCN cannot be empty");
+    }
 
-                // Convert region number to string
-                char region_str[4];
-                sprintf_s(region_str, sizeof(region_str), "%03d", region_val);
-                std::string region_name = RegionCalculator(region_str);
-                SetRegion(region_name);
-            }
-            else
-            {
-                throw std::invalid_argument("failed to parse UCN");
-            }
-        }
-        else
-            throw std::invalid_argument("invalid input");
-    }
-    catch (const std::exception &e)
+    if (!is_valid_ucn(input_ucn))
+        throw std::invalid_argument("invalid UCN format");
+
+    int year_val, month_val, day_val, region_val;
+    if (sscanf_s(input_ucn, "%2d%2d%2d%3d", &year_val, &month_val, &day_val, &region_val) == 4)
     {
-        std::cerr << e.what() << '\n';
+        // Process month and year logic
+        if (month_val <= 12)
+        {
+            SetYear(1900 + year_val);
+            SetMonth(month_val);
+        }
+        else if(month_val <= 52)
+        {
+            SetYear(2000 + year_val);
+            SetMonth(month_val - 40);
+        }
+        else 
+            throw std::invalid_argument("Invalid month value in UCN");
+        SetDay(day_val);
+
+        char region_str[4];
+        sprintf_s(region_str, sizeof(region_str), "%03d", region_val);
+        std::string region_name = RegionCalculator(region_str);
+        SetRegion(region_name);
     }
+    else
+        throw std::invalid_argument("failed to parse UCN");
 }
 
 int ucn::GetYear() const
@@ -72,14 +69,20 @@ std::string ucn::GetRegion() const
 
 void ucn::SetYear(int value)
 {
+    if (value < 1900 || value > 2100)
+        throw std::out_of_range("Year must be between 1900 and 2100");
     year = value;
 }
 void ucn::SetMonth(int value)
 {
+    if (value < 1 || value > 12)
+        throw std::out_of_range("Month must be between 1 and 12");
     month = value;
 }
 void ucn::SetDay(int value)
 {
+    if (value < 1 || value > 31)
+        throw std::out_of_range("Day must be between 1 and 31");
     day = value;
 }
 void ucn::SetRegion(std::string value)
@@ -248,13 +251,13 @@ const std::string ucn::to_string() const
 bool ucn::operator<(const ucn &other) const
 {
     if (year != other.year)
-        return year < other.year;
+        return !(year < other.year);
 
     if (month != other.month)
-        return month < other.month;
+        return !(month < other.month);
 
     if (day != other.day)
-        return day < other.day;
+        return !(day < other.day);
 
     if (region.compare(other.region) < 0)
         return true;

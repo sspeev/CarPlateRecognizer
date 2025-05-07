@@ -36,6 +36,7 @@
 /out/
 /Debug/
 /Release/
+/lib/Catch2/
 /x64/
 /x86/
 /.vs/

@@ -15,5 +15,8 @@ target_sources(
         "registration_plate_tests.cpp"
 )
 
+# Include the Catch2 discovery module
+include(Catch)
+
 # Automatically register all tests
 catch_discover_tests(unit-tests)

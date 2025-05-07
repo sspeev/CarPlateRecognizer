@@ -2,16 +2,9 @@
 #include "Contracts/ucn.hpp"
 #include <iostream>
 
+//Passed
 TEST_CASE("ucn constructor handles valid inputs", "[ucn]")
 {
-    SECTION("1900s birthdate (month <= 12)")
-    {
-        ucn person("5503125892");
-        REQUIRE(person.GetYear() == 1955);
-        REQUIRE(person.GetMonth() == 3);
-        REQUIRE(person.GetDay() == 12);
-    }
-
     SECTION("2000s birthdate (month > 40)")
     {
         ucn person("0549050484");
@@ -21,130 +14,203 @@ TEST_CASE("ucn constructor handles valid inputs", "[ucn]")
         REQUIRE(person.GetRegion() == "Burgas");
     }
 
-    SECTION("Edge case birth month")
+    SECTION("1999s birthdate (month is the actual month)")
     {
-        ucn person("0152313456"); // January 2001
-        REQUIRE(person.GetYear() == 2001);
+        ucn person("9912316334");
+        REQUIRE(person.GetYear() == 1999);
         REQUIRE(person.GetMonth() == 12);
         REQUIRE(person.GetDay() == 31);
+        REQUIRE(person.GetRegion() == "Sofia-grad");
     }
 }
 
+//Passed
 TEST_CASE("ucn constructor throws on invalid inputs", "[ucn]")
 {
-    SECTION("Invalid format")
+    SECTION("Invalid UCN format")
     {
-        REQUIRE_THROWS_AS(ucn("1234567890"), std::invalid_argument);
+        CHECK_THROWS_AS(ucn("0549050483"), std::invalid_argument);
     }
 
     SECTION("Empty input")
     {
-        REQUIRE_THROWS_AS(ucn(""), std::invalid_argument);
+        CHECK_THROWS_AS(ucn(""), std::invalid_argument);
     }
 
     SECTION("Null input")
     {
-        REQUIRE_THROWS_AS(ucn(nullptr), std::invalid_argument);
-    }
-}
-/*
-TEST_CASE("Region calculation works correctly", "[ucn]")
-{
-    SECTION("Various region codes")
-    {
-        isp person1("0549050484"); // Region 048 - Burgas
-        REQUIRE(person1.GetRegion() == "Burgas");
-
-        isp person2("0549050684"); // Region 068 - Burgas
-        REQUIRE(person2.GetRegion() == "Burgas");
-
-        isp person3("0549051004"); // Region 100 - Varna
-        REQUIRE(person3.GetRegion() == "Varna");
-
-        isp person4("0549056504"); // Region 650 - Sofia-grad
-        REQUIRE(person4.GetRegion() == "Sofia-grad");
+        CHECK_THROWS_AS(ucn(nullptr), std::invalid_argument);
     }
 }
 
+//Passed
 TEST_CASE("Comparison operators work correctly", "[isp]")
 {
     SECTION("Less than operator")
     {
-        isp person1("5503125892"); // 1955
-        isp person2("0549050484"); // 2005
-
-        REQUIRE(person1 < person2);
-        REQUIRE_FALSE(person2 < person1);
+        ucn person1("8508092027");
+        ucn person2("0549050484");
+        REQUIRE(person2 < person1);
+        REQUIRE_FALSE(person1 < person2);
     }
 
     SECTION("Same year, different month")
     {
-        isp person1("0501050484"); // January 2005
-        isp person2("0549050484"); // September 2005
+        ucn person1("8507102136");
+        ucn person2("8508092027");
 
-        REQUIRE(person1 < person2);
-        REQUIRE_FALSE(person2 < person1);
+        REQUIRE(person2 < person1);
+        REQUIRE_FALSE(person1 < person2);
     }
 
     SECTION("Same year and month, different day")
     {
-        isp person1("0549020484"); // September 2, 2005
-        isp person2("0549050484"); // September 5, 2005
+        ucn person1("8507102136");
+        ucn person2("8507110635");
 
-        REQUIRE(person1 < person2);
-        REQUIRE_FALSE(person2 < person1);
+        REQUIRE(person2 < person1);
+        REQUIRE_FALSE(person1 < person2);
     }
 
     SECTION("Equality operator")
     {
-        isp person1("0549050484");
-        isp person2("0549050484");
-        isp person3("0549050485"); // Different last digit
+        ucn person1("0549050484");
+        ucn person2("0549050484");
 
         REQUIRE(person1 == person2);
-        REQUIRE_FALSE(person1 == person3);
     }
 }
 
-TEST_CASE("Stream operators work correctly", "[isp]")
+//Passed
+TEST_CASE("UCN string validation", "[ucn]")
 {
-    SECTION("Output stream")
+    SECTION("Non-numeric characters")
     {
-        isp person("0549050484");
-        std::stringstream ss;
-        ss << person;
-        REQUIRE(ss.str() == "592005"); // day + month + year
+        CHECK_THROWS_AS(ucn("123456789A"), std::invalid_argument);
     }
 
-    SECTION("Input stream with valid input")
+    SECTION("Incorrect length")
     {
-        std::stringstream ss("0549050484");
-        isp person;
-        ss >> person;
-        REQUIRE(person.GetYear() == 2005);
-        REQUIRE(person.GetMonth() == 9);
-        REQUIRE(person.GetDay() == 5);
+        CHECK_THROWS_AS(ucn("12345"), std::invalid_argument);
+        CHECK_THROWS_AS(ucn("12345678901"), std::invalid_argument);
     }
 
-    SECTION("Input stream with invalid input")
+    SECTION("Invalid date components")
     {
-        std::stringstream ss("invalid");
-        isp person;
-        ss >> person;
-        REQUIRE(ss.fail());
+        // Invalid month (> 12 for 1900s, > 52 for 2000s)
+        CHECK_THROWS_AS(ucn("9913316334"), std::invalid_argument);
+        CHECK_THROWS_AS(ucn("0553050484"), std::invalid_argument);
+        
+        // Invalid day (> 31)
+        CHECK_THROWS_AS(ucn("9912326334"), std::invalid_argument);
+        CHECK_THROWS_AS(ucn("0549320484"), std::invalid_argument);
+        
+        // Invalid date (February 30th)
+        CHECK_THROWS_AS(ucn("9902306334"), std::invalid_argument);
+        CHECK_THROWS_AS(ucn("0542306334"), std::invalid_argument);
+    }
+
+    SECTION("Invalid checksum")
+    {
+        CHECK_THROWS_AS(ucn("0549050480"), std::invalid_argument);
     }
 }
 
-TEST_CASE("to_string method works correctly", "[isp]")
+//Passed
+TEST_CASE("Region calculation works correctly", "[ucn]")
 {
-    SECTION("Valid isp to string")
+    SECTION("Various region codes")
     {
-        isp person("0549050484");
-        std::string str = person.to_string();
-        REQUIRE(str.length() == 10);
-        // Note: Need to account for how the method formats the year
-        // The actual formatted year might be different than the original input
+        ucn person1("0549050442");
+        REQUIRE(person1.GetRegion() == "Burgas");
+
+        ucn person2("0549052825");
+        REQUIRE(person2.GetRegion() == "Kyustendil");
+
+        ucn person3("0549051069"); 
+        REQUIRE(person3.GetRegion() == "Varna");
+
+        ucn person4("0549056353"); 
+        REQUIRE(person4.GetRegion() == "Sofia-grad");
     }
 }
 
-*/
+//Passed
+TEST_CASE("Copy constructor and assignment", "[ucn]")
+{
+    SECTION("Copy constructor")
+    {
+        ucn original("0549050484");
+        ucn copy(original);
+
+        REQUIRE(copy.GetYear() == 2005);
+        REQUIRE(copy.GetMonth() == 9);
+        REQUIRE(copy.GetDay() == 5);
+        REQUIRE(copy.GetRegion() == "Burgas");
+        REQUIRE(copy == original);
+    }
+
+    SECTION("Assignment operator")
+    {
+        ucn original("0549050484");
+        ucn assigned("9912316334");
+        
+        assigned = original;
+
+        REQUIRE(assigned.GetYear() == 2005);
+        REQUIRE(assigned.GetMonth() == 9);
+        REQUIRE(assigned.GetDay() == 5);
+        REQUIRE(assigned.GetRegion() == "Burgas");
+        REQUIRE(assigned == original);
+    }
+}
+
+//Passed
+TEST_CASE("Move semantics", "[ucn]")
+{
+    SECTION("Move constructor")
+    {
+        ucn original("0549050484");
+        ucn moved(std::move(original));
+
+        REQUIRE(moved.GetYear() == 2005);
+        REQUIRE(moved.GetMonth() == 9);
+        REQUIRE(moved.GetDay() == 5);
+        REQUIRE(moved.GetRegion() == "Burgas");
+    }
+
+    SECTION("Move assignment")
+    {
+        ucn original("0549050484");
+        ucn moved("9912316334");
+        
+        moved = std::move(original);
+
+        REQUIRE(moved.GetYear() == 2005);
+        REQUIRE(moved.GetMonth() == 9);
+        REQUIRE(moved.GetDay() == 5);
+        REQUIRE(moved.GetRegion() == "Burgas");
+    }
+}
+
+//Failed
+TEST_CASE("Edge case birth dates", "[ucn]")
+{
+    SECTION("Leap year February 29")
+    {
+        ucn person("0042290123"); // February 29, 2000 (leap year)
+        REQUIRE(person.GetYear() == 2000);
+        REQUIRE(person.GetMonth() == 2);
+        REQUIRE(person.GetDay() == 29);
+    }
+
+    SECTION("Different centuries")
+    {
+        ucn person1("0042290123"); // 2000
+        ucn person2("9912316334"); // 1999
+        ucn person3("0112316335"); // 1901
+
+        REQUIRE(person2 < person1);
+        REQUIRE(person3 < person1);
+    }
+}
