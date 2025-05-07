@@ -2,7 +2,7 @@
 #include "Contracts/ucn.hpp"
 #include <iostream>
 
-//Passed
+
 TEST_CASE("ucn constructor handles valid inputs", "[ucn]")
 {
     SECTION("2000s birthdate (month > 40)")
@@ -24,7 +24,7 @@ TEST_CASE("ucn constructor handles valid inputs", "[ucn]")
     }
 }
 
-//Passed
+
 TEST_CASE("ucn constructor throws on invalid inputs", "[ucn]")
 {
     SECTION("Invalid UCN format")
@@ -43,7 +43,7 @@ TEST_CASE("ucn constructor throws on invalid inputs", "[ucn]")
     }
 }
 
-//Passed
+
 TEST_CASE("Comparison operators work correctly", "[isp]")
 {
     SECTION("Less than operator")
@@ -81,7 +81,7 @@ TEST_CASE("Comparison operators work correctly", "[isp]")
     }
 }
 
-//Passed
+
 TEST_CASE("UCN string validation", "[ucn]")
 {
     SECTION("Non-numeric characters")
@@ -116,7 +116,7 @@ TEST_CASE("UCN string validation", "[ucn]")
     }
 }
 
-//Passed
+
 TEST_CASE("Region calculation works correctly", "[ucn]")
 {
     SECTION("Various region codes")
@@ -135,7 +135,7 @@ TEST_CASE("Region calculation works correctly", "[ucn]")
     }
 }
 
-//Passed
+
 TEST_CASE("Copy constructor and assignment", "[ucn]")
 {
     SECTION("Copy constructor")
@@ -165,7 +165,7 @@ TEST_CASE("Copy constructor and assignment", "[ucn]")
     }
 }
 
-//Passed
+
 TEST_CASE("Move semantics", "[ucn]")
 {
     SECTION("Move constructor")
@@ -193,12 +193,12 @@ TEST_CASE("Move semantics", "[ucn]")
     }
 }
 
-//Failed
+
 TEST_CASE("Edge case birth dates", "[ucn]")
 {
     SECTION("Leap year February 29")
     {
-        ucn person("0042290123"); // February 29, 2000 (leap year)
+        ucn person("0042293165"); // February 29, 2000 (leap year)
         REQUIRE(person.GetYear() == 2000);
         REQUIRE(person.GetMonth() == 2);
         REQUIRE(person.GetDay() == 29);
@@ -206,11 +206,11 @@ TEST_CASE("Edge case birth dates", "[ucn]")
 
     SECTION("Different centuries")
     {
-        ucn person1("0042290123"); // 2000
-        ucn person2("9912316334"); // 1999
-        ucn person3("0112316335"); // 1901
+        ucn person1("0042293165"); // 2000
+        ucn person2("9902201045"); // 1999
+        ucn person3("0102200418"); // 1901
 
-        REQUIRE(person2 < person1);
-        REQUIRE(person3 < person1);
+        REQUIRE(person1 < person2);
+        REQUIRE(person2 < person3);
     }
 }
