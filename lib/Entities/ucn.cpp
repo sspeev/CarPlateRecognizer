@@ -10,7 +10,7 @@
 ucn::ucn() = default;
 
 ucn::ucn(const char *input_ucn)
-    : year(), month(), day(), region()
+    : year(), month(), day(), region(), uniqueDigit()
 {
     if (!input_ucn) {
         throw std::invalid_argument("UCN cannot be null");
@@ -23,8 +23,8 @@ ucn::ucn(const char *input_ucn)
     if (!is_valid_ucn(input_ucn))
         throw std::invalid_argument("invalid UCN format");
 
-    int year_val, month_val, day_val, region_val;
-    if (sscanf_s(input_ucn, "%2d%2d%2d%3d", &year_val, &month_val, &day_val, &region_val) == 4)
+    int year_val, month_val, day_val, region_val, unique_digit_val;
+    if (sscanf_s(input_ucn, "%2d%2d%2d%3d%1d", &year_val, &month_val, &day_val, &region_val, &unique_digit_val) == 5)
     {
         // Process month and year logic
         if (month_val <= 12)
@@ -40,7 +40,7 @@ ucn::ucn(const char *input_ucn)
         else 
             throw std::invalid_argument("Invalid month value in UCN");
         SetDay(day_val);
-
+        uniqueDigit = unique_digit_val;
         char region_str[4];
         sprintf_s(region_str, sizeof(region_str), "%03d", region_val);
         std::string region_name = RegionCalculator(region_str);
@@ -186,12 +186,7 @@ const int NumberFixer(char *num)
 
 std::ostream &operator<<(std::ostream &os, const ucn &egn)
 {
-    if (egn.day)
-        os << egn.day;
-    if (egn.month)
-        os << egn.month;
-    if (egn.year)
-        os << egn.year;
+    os << egn.to_string();
     return os;
 }
 std::istream &operator>>(std::istream &is, ucn &egn)
@@ -224,7 +219,7 @@ const std::string ucn::to_string() const
     }
     else
     {
-        result += std::to_string(year);
+        result += std::to_string(year % 100);
     }
 
     if (month < 10)
@@ -244,6 +239,7 @@ const std::string ucn::to_string() const
         result += std::to_string(day);
     }
     result += num_region;
+    result += std::to_string(uniqueDigit);
     return result;
 }
 

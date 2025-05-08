@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include "Contracts/ucn.hpp"
 #include <iostream>
-
+#include <sstream>
 
 TEST_CASE("ucn constructor handles valid inputs", "[ucn]")
 {
@@ -212,5 +212,48 @@ TEST_CASE("Edge case birth dates", "[ucn]")
 
         REQUIRE(person1 < person2);
         REQUIRE(person2 < person3);
+    }
+}
+
+TEST_CASE("UCN input/output operations", "[ucn]")
+{
+    SECTION("Output operator writes correct format")
+    {
+        ucn person("9009053380");
+        std::stringstream ss;
+        ss << person;
+        
+        REQUIRE(ss.str() == "9009053380");
+    }
+    
+    SECTION("Input operator reads correct format")
+    {
+        std::stringstream ss;
+        ss << "9009051406";
+        
+        ucn person("9009051480"); // Initialize with different value
+        ss >> person;
+        
+        REQUIRE(person.GetYear() == 1990);
+        REQUIRE(person.GetMonth() == 9);
+        REQUIRE(person.GetDay() == 5);
+        REQUIRE(person.GetRegion() == "Veliko Tarnovo");
+        std::string temp = person.to_string();
+        REQUIRE(person.to_string() == "9009051406");
+    }
+    
+    SECTION("Input operator handles invalid input")
+    {
+        std::stringstream ss;
+        ss << "invalid_ucn";
+        
+        ucn person("9009057087");
+        ss >> person;
+        
+        // Stream should be in fail state
+        REQUIRE(ss.fail());
+        
+        // UCN object should not be modified when input fails
+        REQUIRE(person.to_string() == "9009057087");
     }
 }

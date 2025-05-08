@@ -8,6 +8,7 @@ private:
     int year;
     int month;
     int day;
+    int uniqueDigit;
     std::string region;
     std::string num_region;
 
