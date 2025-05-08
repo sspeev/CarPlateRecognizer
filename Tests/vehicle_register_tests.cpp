@@ -134,14 +134,14 @@ TEST_CASE("vehicle_register can deregister vehicles", "[vehicle_register]")
         REQUIRE(reg.GetOwnerVehicles().find(owner) == reg.GetOwnerVehicles().end());
     }
 }
-/*
+
 TEST_CASE("vehicle_register can find vehicles owned by a person", "[vehicle_register]")
 {
     vehicle_register reg;
 
     SECTION("owned_vehicles returns empty vector for non-existent owner")
     {
-        ucn owner("8101234567");
+        ucn owner("8109050649");
         auto vehicles = reg.owned_vehicles(owner);
         REQUIRE(vehicles.empty());
     }
@@ -150,7 +150,7 @@ TEST_CASE("vehicle_register can find vehicles owned by a person", "[vehicle_regi
     {
         registration_plate plate1("CE1010GH");
         registration_plate plate2("CE2020IJ");
-        ucn owner("8502013344");
+        ucn owner("8509053072");
 
         reg.Register(plate1, owner);
         reg.Register(plate2, owner);
@@ -179,8 +179,8 @@ TEST_CASE("vehicle_register input/output operations", "[vehicle_register]")
         vehicle_register reg;
         registration_plate plate1("CF1234KL");
         registration_plate plate2("CF5678MN");
-        ucn owner1("9001011234");
-        ucn owner2("8502023456");
+        ucn owner1("9009050652");
+        ucn owner2("3006138939");
 
         reg.Register(plate1, owner1);
         reg.Register(plate2, owner2);
@@ -197,13 +197,13 @@ TEST_CASE("vehicle_register input/output operations", "[vehicle_register]")
     {
         vehicle_register reg;
         std::stringstream ss;
-        ss << "9001011234 CF1234KL\n";
-        ss << "8502023456 CF5678MN\n";
+        ss << "9009050652 CF1234KL\n";
+        ss << "3006138939 CF5678MN\n";
 
         ss >> reg;
 
-        ucn owner1("9001011234");
-        ucn owner2("8502023456");
+        ucn owner1("9009050652");
+        ucn owner2("3006138939");
 
         auto vehicles1 = reg.owned_vehicles(owner1);
         auto vehicles2 = reg.owned_vehicles(owner2);
@@ -228,4 +228,3 @@ TEST_CASE("vehicle_register input/output operations", "[vehicle_register]")
         REQUIRE(reg.GetOwnerVehicles().empty());
     }
 }
-*/
